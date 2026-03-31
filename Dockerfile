@@ -1,5 +1,8 @@
 FROM rust:1-bookworm AS build
-RUN apt-get update && apt-get install -y --no-install-recommends nodejs && rm -rf /var/lib/apt/lists/*
+RUN set -eux; \
+	apt-get update; \
+	apt-get install -y --no-install-recommends nodejs npm || (apt-get update && apt-get install -y --no-install-recommends --fix-missing nodejs npm); \
+	rm -rf /var/lib/apt/lists/*
 WORKDIR /src
 COPY Cargo.toml Cargo.lock ./
 COPY server/ server/
