@@ -8,8 +8,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.net.http.SslError
 import android.os.Bundle
 import android.provider.Settings
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import android.view.MotionEvent
@@ -30,6 +32,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var errorOverlay: View
     private lateinit var errorText: TextView
     private lateinit var retryButton: Button
+    private var handledLoadFailure = false
 
     private val prefs by lazy { getSharedPreferences("decklaunch", MODE_PRIVATE) }
 
@@ -93,11 +96,11 @@ class MainActivity : AppCompatActivity() {
         errorText = findViewById(R.id.error_text)
         retryButton = findViewById(R.id.retry_button)
 
-        setupWebView(serverUrl, token)
+        setupWebView()
 
         retryButton.setOnClickListener {
             errorOverlay.visibility = View.GONE
-            loadPanel(serverUrl, token)
+            loadPanelFromPrefs()
         }
 
         findViewById<Button>(R.id.settings_button).setOnClickListener {
@@ -117,7 +120,7 @@ class MainActivity : AppCompatActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
-    private fun setupWebView(serverUrl: String, token: String) {
+    private fun setupWebView() {
         webView.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true
@@ -138,8 +141,27 @@ class MainActivity : AppCompatActivity() {
                 error: WebResourceError
             ) {
                 if (request.isForMainFrame) {
-                    scheduleReload(serverUrl, token)
+                    handlePanelLoadFailure()
                 }
+            }
+
+            override fun onReceivedHttpError(
+                view: WebView,
+                request: WebResourceRequest,
+                errorResponse: WebResourceResponse
+            ) {
+                if (request.isForMainFrame && errorResponse.statusCode >= 400) {
+                    handlePanelLoadFailure()
+                }
+            }
+
+            override fun onReceivedSslError(
+                view: WebView,
+                handler: SslErrorHandler,
+                error: SslError
+            ) {
+                handler.cancel()
+                handlePanelLoadFailure()
             }
 
             override fun onPageFinished(view: WebView, url: String) {
@@ -161,7 +183,7 @@ class MainActivity : AppCompatActivity() {
             // else do nothing — don't exit the launcher
         }
 
-        loadPanel(serverUrl, token)
+        loadPanelFromPrefs()
         requestAppPermissions()
         registerReceiver(screenOnReceiver, IntentFilter(Intent.ACTION_SCREEN_ON))
     }
@@ -178,13 +200,27 @@ class MainActivity : AppCompatActivity() {
         if (needed.isNotEmpty()) ActivityCompat.requestPermissions(this, needed, 1001)
     }
 
-    private fun scheduleReload(serverUrl: String, token: String) {
-        webView.postDelayed({ loadPanel(serverUrl, token) }, 3000)
-    }
-
     private fun loadPanel(serverUrl: String, token: String) {
         val url = "${serverUrl.trimEnd('/')}/?token=${token}"
         webView.loadUrl(url)
+    }
+
+    private fun loadPanelFromPrefs() {
+        val serverUrl = prefs.getString("server_url", "") ?: ""
+        val token = prefs.getString("auth_token", "") ?: ""
+        if (serverUrl.isNotBlank() && token.isNotBlank()) {
+            loadPanel(serverUrl, token)
+        }
+    }
+
+    private fun handlePanelLoadFailure() {
+        if (handledLoadFailure) return
+        handledLoadFailure = true
+        runOnUiThread {
+            Toast.makeText(this, "Failed to connect. Please check server settings.", Toast.LENGTH_LONG).show()
+            showSetup()
+            finish()
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -208,11 +244,13 @@ class MainActivity : AppCompatActivity() {
         val token = prefs.getString("auth_token", "") ?: ""
         val serverUrl = prefs.getString("server_url", "") ?: ""
         AlertDialog.Builder(this)
-            .setItems(arrayOf("Open config", "Change launcher", "Debug overlay")) { _, which ->
+            .setItems(arrayOf("Open config", "Change server", "Open settings", "Change launcher", "Debug overlay")) { _, which ->
                 when (which) {
                     0 -> webView.loadUrl("${serverUrl.trimEnd('/')}/config?token=${token}")
-                    1 -> startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
-                    2 -> webView.evaluateJavascript("window.toggleDebug()", null)
+                    1 -> showSetup()
+                    2 -> startActivity(Intent(Settings.ACTION_SETTINGS))
+                    3 -> startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
+                    4 -> webView.evaluateJavascript("window.toggleDebug()", null)
                 }
             }
             .show()
