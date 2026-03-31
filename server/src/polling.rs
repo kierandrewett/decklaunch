@@ -174,9 +174,9 @@ async fn poll_tile(state: &Arc<AppState>, tile_id: &str, agent_id: &str, command
     match tokio::time::timeout(Duration::from_secs(30), rx).await {
         Ok(Ok(result)) => {
             let data = if result.ok {
-                result.stdout.trim().to_string()
+                result.stdout
             } else {
-                format!("err: {}", result.stderr.trim())
+                format!("err: {}", result.stderr)
             };
             let mut states = state.tile_states.write().await;
             states.insert(

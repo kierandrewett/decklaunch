@@ -239,7 +239,7 @@ function populateTileEl(el, tile) {
   el.classList.remove('tile-spacer');
   el.style.setProperty('--tile-accent', color);
 
-  if (tile.icon) {
+  if (tile.icon && !tile.hideIcon) {
     const iconWrap = document.createElement('div');
     iconWrap.className = 'tile-icon-wrap';
     iconWrap.appendChild(createIcon(tile.icon, { size: 20 }));
@@ -573,6 +573,16 @@ function renderProps(tile) {
 // ── Icon section with search ──────────────────────────────────────────────────
 function buildIconSection(tile) {
   const sec = section('Icon');
+
+  const hideIconCheck = document.createElement('input');
+  hideIconCheck.type = 'checkbox';
+  hideIconCheck.checked = tile.hideIcon ?? false;
+  hideIconCheck.addEventListener('change', () => {
+    tile.hideIcon = hideIconCheck.checked;
+    markDirty();
+    updateTileEl(tile.id);
+  });
+  sec.appendChild(field('Hide icon', hideIconCheck));
 
   // Tabs: Lucide | App icons
   const hasNative = !!(window.Native?.getInstalledApps);

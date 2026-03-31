@@ -330,7 +330,7 @@ function updateTileData(id) {
   // Icon variants — look up the tile config once
   const tile = config?.tiles?.find(t => t.id === id);
 
-  if (tile?.iconVariants?.length) {
+  if (!tile?.hideIcon && tile?.iconVariants?.length) {
     const val = s.data ?? '';
     const variant = tile.iconVariants.find(v => v.when === val);
     const iconName = variant?.icon ?? tile.icon;
@@ -665,7 +665,7 @@ function renderTileIcon(tile) {
 }
 
 function buildGeneric(el, tile) {
-  if (tile.icon) {
+  if (tile.icon && !tile.hideIcon) {
     el.appendChild(renderTileIcon(tile));
   }
   const label = document.createElement('div');

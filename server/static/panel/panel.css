@@ -135,6 +135,7 @@ html, body {
   font-weight: 700;
   color: var(--text-data);
   text-align: center;
+  white-space: pre-line;
 }
 /* Percentage fill bar — shown when data is "N%" */
 .tile-pc_data.has-pct::after,
