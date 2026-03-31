@@ -67,7 +67,8 @@ const TOKEN = params.get('token') || sessionStorage.getItem('deck_token') || '';
 if (TOKEN) sessionStorage.setItem('deck_token', TOKEN);
 
 const HOST = location.host;
-const WS_URL = `ws://${HOST}/ws/panel`;
+const WS_PROTOCOL = location.protocol === 'https:' ? 'wss' : 'ws';
+const WS_URL = `${WS_PROTOCOL}://${HOST}/ws/panel`;
 
 let config = null;
 let ws = null;
