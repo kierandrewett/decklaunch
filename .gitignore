@@ -1,0 +1,33 @@
+target/
+
+# Rust
+**/*.rs.bk
+
+# Android / Gradle
+.gradle/
+android/.gradle/
+android/.kotlin/
+android/**/build/
+android/**/.cxx/
+android/**/.externalNativeBuild/
+gradle-app.setting
+android/local.properties
+*.iml
+
+# Node / frontend
+node_modules
+.npm
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

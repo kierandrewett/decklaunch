@@ -1,0 +1,13 @@
+services:
+  server:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - config:/root/.config/decklaunch
+    environment:
+      - DECK_TOKEN=${DECK_TOKEN:-}
+    restart: unless-stopped
+
+volumes:
+  config:

@@ -1,0 +1,14 @@
+[Unit]
+Description=DeckLaunch Agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=%h/.config/decklaunch/agent.env
+ExecStart=%h/.local/bin/decklaunch-agent --server ${DECK_SERVER} --token ${DECK_TOKEN}
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

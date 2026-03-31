@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DeckLaunch — Config</title>
+  <link rel="stylesheet" href="/config/config.css">
+  <link rel="preconnect" href="https://fonts.drewett.dev">
+  <link href="https://fonts.drewett.dev/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div id="login-screen">
+  <form id="login-form" class="login-box">
+    <div class="logo">DeckLaunch</div>
+    <div class="login-subtitle">Config Editor</div>
+    <input id="login-token" type="password" placeholder="Auth token" autocomplete="off">
+    <button type="submit" class="btn-save" style="margin-top:4px">Connect</button>
+    <div id="login-error" class="login-error hidden"></div>
+  </form>
+</div>
+
+<div id="editor" class="hidden">
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <span class="logo-sm">DeckLaunch</span>
+      <span class="status-badge" id="agent-status">—</span>
+    </div>
+    <div class="toolbar-right">
+      <div class="grid-size-controls">
+        <label>Cols <input type="number" id="cfg-cols" min="1" max="12" class="num-input" style="width:48px"></label>
+        <label>Rows <input type="number" id="cfg-rows" min="1" max="10" class="num-input" style="width:48px"></label>
+      </div>
+      <div class="toolbar-divider"></div>
+      <button id="add-tile-btn" class="btn-add-tile">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add tile
+      </button>
+      <div class="toolbar-divider"></div>
+      <button id="save-btn" class="btn-save">Save</button>
+      <span id="save-status" class="save-status"></span>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <div class="preview-panel">
+      <div class="phone-frame">
+        <div id="grid-preview" class="grid-preview"></div>
+      </div>
+    </div>
+    <div class="props-panel" id="props-panel">
+      <div class="props-empty">
+        <div class="props-empty-icon"></div>
+        <div>No tile selected</div>
+        <div class="props-hint">Click a tile to edit it, or click <strong>+</strong> in any empty cell</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/config/config.js"></script>
+</body>
+</html>

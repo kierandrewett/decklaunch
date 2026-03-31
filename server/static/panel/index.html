@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>DeckLaunch</title>
+  <link rel="stylesheet" href="/panel/panel.css">
+  <link rel="preconnect" href="https://fonts.drewett.dev">
+  <link href="https://fonts.drewett.dev/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="connection-indicator" class="indicator disconnected" title="WebSocket status"></div>
+<div id="grid" class="grid"></div>
+  <div id="error-overlay" class="hidden">
+    <div class="error-box">
+      <div class="error-icon">⚡</div>
+      <div id="error-message">Connecting...</div>
+      <button id="retry-btn" onclick="retryConnect()">Retry</button>
+    </div>
+  </div>
+  <script src="/panel/panel.js"></script>
+</body>
+</html>
