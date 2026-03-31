@@ -52,6 +52,8 @@ pub struct Tile {
     pub hide_controls: bool,
     #[serde(rename = "hideIcon", default, skip_serializing_if = "is_false")]
     pub hide_icon: bool,
+    #[serde(rename = "hideLabel", default, skip_serializing_if = "is_false")]
+    pub hide_label: bool,
     #[serde(rename = "liveRing", default, skip_serializing_if = "is_false")]
     pub live_ring: bool,
     #[serde(rename = "iconVariants", default, skip_serializing_if = "Vec::is_empty")]

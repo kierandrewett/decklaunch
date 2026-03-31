@@ -295,6 +295,13 @@ function isAndroidAudioActive() {
   return !!callNative('isMusicActive');
 }
 
+function parsePercent(data) {
+  const match = String(data ?? '').match(/(\d+(?:\.\d+)?)%/);
+  if (!match) return null;
+  const value = parseFloat(match[1]);
+  return Number.isFinite(value) ? value : null;
+}
+
 function updateTileData(id) {
   const el = document.getElementById(`tile-${id}`);
   if (!el) return;
@@ -318,9 +325,9 @@ function updateTileData(id) {
   if (dataEl) dataEl.textContent = s.data ?? '—';
 
   // Percentage fill bar
-  const pctMatch = (s.data ?? '').match(/^(\d+(?:\.\d+)?)%$/);
-  if (pctMatch) {
-    el.style.setProperty('--pct', pctMatch[1] + '%');
+  const pct = parsePercent(s.data);
+  if (pct != null) {
+    el.style.setProperty('--pct', pct + '%');
     el.classList.add('has-pct');
   } else {
     el.style.removeProperty('--pct');
@@ -396,7 +403,9 @@ async function startMicMonitor(tiles) {
 
   const serverAllows = (t) => {
     const v = tileStates[t.id]?.data;
-    return !(!v || v === '—' || v === '0%');
+    const pct = parsePercent(v);
+    if (pct != null) return pct > 0;
+    return !(!v || v === '—');
   };
 
   const applyLevel = (el, level, on) => {
@@ -600,8 +609,8 @@ function setupDrag(el, tile) {
     if (e.touches.length !== 1) return;
     e.preventDefault();
     const touch = e.touches[0];
-    const pctMatch = (tileStates[tile.id]?.data ?? '').match(/^(\d+(?:\.\d+)?)%$/);
-    startPct = pctMatch ? parseFloat(pctMatch[1]) : 50;
+    const pct = parsePercent(tileStates[tile.id]?.data);
+    startPct = pct != null ? pct : 50;
     startY = touch.clientY;
     startTime = Date.now();
     dragging = true;
@@ -668,10 +677,12 @@ function buildGeneric(el, tile) {
   if (tile.icon && !tile.hideIcon) {
     el.appendChild(renderTileIcon(tile));
   }
-  const label = document.createElement('div');
-  label.className = 'tile-label';
-  label.textContent = tile.label ?? '';
-  el.appendChild(label);
+  if (!tile.hideLabel) {
+    const label = document.createElement('div');
+    label.className = 'tile-label';
+    label.textContent = tile.label ?? '';
+    el.appendChild(label);
+  }
 
   if (tile.type === 'pc_data') {
     const data = document.createElement('div');
@@ -1578,10 +1589,10 @@ function buildVolume(el, tile) {
   // Override server state updates — in android mode, ignore PC volume from server
   el._volumeUpdate = (data, stale) => {
     if (androidMode) return; // android polling drives display instead
-    const pctMatch = (data ?? '').match(/^(\d+(?:\.\d+)?)%$/);
-    if (pctMatch) {
-      setVolumeIcon(parseFloat(pctMatch[1]) === 0);
-      el.style.setProperty('--pct', pctMatch[1] + '%');
+    const pct = parsePercent(data);
+    if (pct != null) {
+      setVolumeIcon(pct === 0);
+      el.style.setProperty('--pct', pct + '%');
       el.classList.add('has-pct');
       if (!el._dragging) dataEl.textContent = data;
     } else {
@@ -1663,8 +1674,8 @@ function buildVolume(el, tile) {
     if (androidMode) {
       startPct = callNative('getVolume') ?? 50;
     } else {
-      const pctMatch = (tileStates[tile.id]?.data ?? '').match(/^(\d+(?:\.\d+)?)%$/);
-      startPct = pctMatch ? parseFloat(pctMatch[1]) : 50;
+      const pct = parsePercent(tileStates[tile.id]?.data);
+      startPct = pct != null ? pct : 50;
     }
     startY = e.touches[0].clientY;
     startTime = Date.now();
@@ -1714,12 +1725,12 @@ function buildMic(el, tile) {
   el.appendChild(dataEl);
 
   el._micUpdate = (data, stale) => {
-    const pctMatch = (data ?? '').match(/^(\d+(?:\.\d+)?)%$/);
-    if (pctMatch) {
-      const muted = parseFloat(pctMatch[1]) === 0;
+    const pct = parsePercent(data);
+    if (pct != null) {
+      const muted = pct === 0;
       iconWrap.innerHTML = '';
       iconWrap.appendChild(createIcon(muted ? 'mic-off' : 'mic'));
-      el.style.setProperty('--pct', pctMatch[1] + '%');
+      el.style.setProperty('--pct', pct + '%');
       el.classList.add('has-pct');
       if (!el._dragging) dataEl.textContent = data;
     } else {
@@ -1773,8 +1784,8 @@ function buildMic(el, tile) {
   el.addEventListener('touchstart', (e) => {
     if (e.touches.length !== 1) return;
     e.preventDefault();
-    const pctMatch = (tileStates[tile.id]?.data ?? '').match(/^(\d+(?:\.\d+)?)%$/);
-    startPct = pctMatch ? parseFloat(pctMatch[1]) : 50;
+    const pct = parsePercent(tileStates[tile.id]?.data);
+    startPct = pct != null ? pct : 50;
     startY = e.touches[0].clientY;
     startTime = Date.now();
     dragging = true;

@@ -246,10 +246,12 @@ function populateTileEl(el, tile) {
     el.appendChild(iconWrap);
   }
 
-  const label = document.createElement('div');
-  label.className = 'tile-label';
-  label.textContent = tile.label || '';
-  el.appendChild(label);
+  if (!tile.hideLabel) {
+    const label = document.createElement('div');
+    label.className = 'tile-label';
+    label.textContent = tile.label || '';
+    el.appendChild(label);
+  }
 }
 
 // Update just the visual content of an existing tile (label/icon changed — no re-render needed)
@@ -583,6 +585,16 @@ function buildIconSection(tile) {
     updateTileEl(tile.id);
   });
   sec.appendChild(field('Hide icon', hideIconCheck));
+
+  const hideLabelCheck = document.createElement('input');
+  hideLabelCheck.type = 'checkbox';
+  hideLabelCheck.checked = tile.hideLabel ?? false;
+  hideLabelCheck.addEventListener('change', () => {
+    tile.hideLabel = hideLabelCheck.checked;
+    markDirty();
+    updateTileEl(tile.id);
+  });
+  sec.appendChild(field('Hide label', hideLabelCheck));
 
   // Tabs: Lucide | App icons
   const hasNative = !!(window.Native?.getInstalledApps);
